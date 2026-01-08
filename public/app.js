@@ -1,4 +1,5 @@
 // ===== グローバル変数 =====
+alert('プログラムを読み込みました'); // JSがロードされたか確認
 let rooms = [];
 let currentMode = 'selection'; // 'selection' or 'management'
 let lastActionTime = 0; // 最終操作時刻 (ポーリング競合防止用)
@@ -53,8 +54,14 @@ async function fetchRooms(silent = false) {
     }
 
     try {
-        const response = await fetch('/api/rooms');
-        if (!response.ok) throw new Error('データ取得失敗');
+        // 5秒でタイムアウトさせる
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const response = await fetch('/api/rooms', { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) throw new Error('データ取得失敗: ' + response.status);
 
         const newRooms = await response.json();
 
@@ -469,10 +476,3 @@ function showLoading() {
     `;
     }
 }
-
-function showToast(message, type = 'info') {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.className = 'toast show ' + type;
-
-    setTimeout(() => {
