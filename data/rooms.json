@@ -1,0 +1,265 @@
+{
+  "rooms": [
+    {
+      "room_id": "201",
+      "display_order": 100,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "202",
+      "display_order": 110,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "203",
+      "display_order": 120,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "205",
+      "display_order": 130,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "206",
+      "display_order": 140,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "207",
+      "display_order": 150,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "208",
+      "display_order": 160,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "209",
+      "display_order": 170,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "210",
+      "display_order": 180,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "211",
+      "display_order": 190,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "212",
+      "display_order": 200,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "213",
+      "display_order": 210,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "215",
+      "display_order": 220,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "216",
+      "display_order": 230,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "217",
+      "display_order": 240,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "218",
+      "display_order": 250,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "219",
+      "display_order": 260,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "220",
+      "display_order": 270,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "221",
+      "display_order": 280,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "222",
+      "display_order": 290,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "223",
+      "display_order": 300,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "225",
+      "display_order": 310,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "226-7",
+      "display_order": 320,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "228",
+      "display_order": 330,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "229",
+      "display_order": 340,
+      "category": "general",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "松虫草",
+      "display_order": 900,
+      "category": "special",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "翁草",
+      "display_order": 910,
+      "category": "special",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "笹百合",
+      "display_order": 920,
+      "category": "special",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    },
+    {
+      "room_id": "寒椿",
+      "display_order": 930,
+      "category": "special",
+      "is_active": 0,
+      "is_checkout": 0,
+      "notes": "",
+      "updated_at": "2026-01-07T23:36:50.080Z"
+    }
+  ]
+}
