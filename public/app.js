@@ -1,17 +1,15 @@
 // ===== グローバル変数 =====
-alert('プログラムを読み込みました'); // JSがロードされたか確認
 let rooms = [];
 let currentMode = 'selection'; // 'selection' or 'management'
 let lastActionTime = 0; // 最終操作時刻 (ポーリング競合防止用)
 
-// デバッグ用: エラーを画面に表示
-window.addEventListener('error', function (e) {
-    const msg = e.message + ' at line ' + e.lineno;
+// ===== ユーティリティ =====
+function escapeHtml(text) {
+    if (!text) return '';
     const div = document.createElement('div');
-    div.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;padding:20px;z-index:9999;font-weight:bold;';
-    div.textContent = msg;
-    document.body.appendChild(div);
-});
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 // ===== 初期化 =====
 document.addEventListener('DOMContentLoaded', () => {
@@ -19,13 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initApp() {
-    console.log('initApp started');
     showLoading();
     try {
         await fetchRooms();
-        console.log('fetchRooms done');
     } catch (e) {
-        console.error('fetchRooms failed in initApp', e);
+        console.error('fetchRooms failed', e);
+        showToast('通信エラーが発生しました', 'error');
     }
     startPolling();
     determineInitialMode();
@@ -139,7 +136,7 @@ function renderSelectionView() {
     const specialRooms = rooms.filter(r => r.category === 'special');
 
     container.innerHTML = `
-    <section class="room-category">
+    < section class="room-category" >
       <div class="category-header">
         <span class="category-icon">🏠</span>
         <h2 class="category-title">本館</h2>
@@ -147,18 +144,18 @@ function renderSelectionView() {
       <div class="room-grid">
         ${generalRooms.map(room => createSelectionItem(room)).join('')}
       </div>
-    </section>
-    
+    </section >
+
     <section class="room-category">
-      <div class="category-header">
-        <span class="category-icon">🏡</span>
-        <h2 class="category-title">別館</h2>
-      </div>
-      <div class="room-grid">
-        ${specialRooms.map(room => createSelectionItem(room)).join('')}
-      </div>
+        <div class="category-header">
+            <span class="category-icon">🏡</span>
+            <h2 class="category-title">別館</h2>
+        </div>
+        <div class="room-grid">
+            ${specialRooms.map(room => createSelectionItem(room)).join('')}
+        </div>
     </section>
-  `;
+`;
 
     // イベントリスナー
     container.querySelectorAll('.room-item').forEach(item => {
@@ -171,10 +168,10 @@ function renderSelectionView() {
 function createSelectionItem(room) {
     const selectedClass = room.is_active ? 'selected' : '';
     return `
-    <div class="room-item ${selectedClass}" data-room-id="${room.room_id}">
-      <span class="room-name">${escapeHtml(room.room_id)}</span>
-    </div>
-  `;
+    < div class="room-item ${selectedClass}" data - room - id="${room.room_id}" >
+        <span class="room-name">${escapeHtml(room.room_id)}</span>
+    </div >
+    `;
 }
 
 function toggleRoomSelection(roomId) {
@@ -185,7 +182,7 @@ function toggleRoomSelection(roomId) {
         const newValue = room.is_active ? 0 : 1;
         room.is_active = newValue;
 
-        const item = document.querySelector(`.room-item[data-room-id="${roomId}"]`);
+        const item = document.querySelector(`.room - item[data - room - id="${roomId}"]`);
         if (item) {
             if (newValue) item.classList.add('selected');
             else item.classList.remove('selected');
@@ -231,7 +228,7 @@ function confirmSelection() {
         return;
     }
     switchToManagement();
-    showToast(`${activeCount}室を選択しました`, 'success');
+    showToast(`${ activeCount } 室を選択しました`, 'success');
 }
 
 // ===== 管理画面描画 =====
@@ -244,24 +241,24 @@ function renderManagementView() {
 
     if (activeRooms.length === 0) {
         container.innerHTML = `
-            <div class="loading">
+    < div class="loading" >
                 <p class="loading-text">使用客室が選択されていません</p>
                 <button class="action-btn action-btn-primary" onclick="switchToSelection()">客室を選択する</button>
-            </div>
-        `;
+            </div >
+    `;
         return;
     }
 
     let html = `
-        <div class="room-list-header">
+    < div class="room-list-header" >
             <div>参加者</div>
             <div>アウト状況</div>
             <div>コメント</div>
-        </div>
-        <div class="room-list-body">
-            ${activeRooms.map(room => createRoomRow(room)).join('')}
-        </div>
-    `;
+        </div >
+    <div class="room-list-body">
+        ${activeRooms.map(room => createRoomRow(room)).join('')}
+    </div>
+`;
 
     container.innerHTML = html;
     updateProgress();
@@ -277,7 +274,7 @@ function createRoomRow(room) {
         : '<div class="status-stay"></div>'; // 三角
 
     return `
-    <div class="room-row" data-room-id="${room.room_id}">
+    < div class="room-row" data - room - id="${room.room_id}" >
         <div class="col-room">${escapeHtml(room.room_id)}</div>
         <div class="col-status" onclick="toggleOut('${room.room_id}')">
             <div class="status-icon-wrapper">
@@ -287,7 +284,7 @@ function createRoomRow(room) {
         <div class="col-note" onclick="editNote('${room.room_id}')">
             <span class="note-text">${note ? escapeHtml(note) : '<span style="color:#ccc;font-size:0.8rem">未入力</span>'}</span>
         </div>
-    </div>
+    </div >
     `;
 }
 
@@ -302,7 +299,7 @@ function editNote(roomId) {
         // 楽観的更新
         room.notes = newNote;
 
-        const row = document.querySelector(`.room-row[data-room-id="${roomId}"]`);
+        const row = document.querySelector(`.room - row[data - room - id="${roomId}"]`);
         if (row) {
             const noteEl = row.querySelector('.note-text');
             noteEl.innerHTML = newNote ? escapeHtml(newNote) : '<span style="color:#ccc;font-size:0.8rem">未入力</span>';
@@ -318,7 +315,7 @@ function createRoomCard(room) {
     const hasNotes = room.notes && room.notes.trim() !== '';
 
     return `
-    <div class="room-card ${outClass}" data-room-id="${room.room_id}">
+    < div class="room-card ${outClass}" data - room - id="${room.room_id}" >
       <div class="room-card-content">
         <span class="room-name">${escapeHtml(room.room_id)}</span>
         <button class="out-button ${btnClass}" 
@@ -338,8 +335,8 @@ function createRoomCard(room) {
                  data-room-id="${room.room_id}">
         </div>
       </div>
-    </div>
-  `;
+    </div >
+    `;
 }
 
 function attachManagementEventListeners() {
@@ -363,7 +360,7 @@ function toggleOut(roomId) {
         room.is_checkout = newValue;
 
         // DOM更新
-        const row = document.querySelector(`.room-row[data-room-id="${roomId}"]`);
+        const row = document.querySelector(`.room - row[data - room - id="${roomId}"]`);
         if (row) {
             const iconWrapper = row.querySelector('.status-icon-wrapper');
             if (newValue) {
@@ -393,7 +390,7 @@ function updateProgress() {
     document.getElementById('totalActiveCount').textContent = total;
 
     const percentage = total > 0 ? (outCount / total) * 100 : 0;
-    document.getElementById('progressFill').style.width = `${percentage}%`;
+    document.getElementById('progressFill').style.width = `${ percentage }% `;
 }
 
 // ===== イベントハンドラー =====
@@ -411,7 +408,7 @@ async function handleNotesChange(event) {
 // ===== API呼び出し =====
 async function updateRoom(roomId, updates) {
     try {
-        const response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}`, {
+        const response = await fetch(`/ api / rooms / ${ encodeURIComponent(roomId) } `, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
@@ -469,10 +466,10 @@ function showLoading() {
     const selectionList = document.getElementById('selectionList');
     if (selectionList) {
         selectionList.innerHTML = `
-      <div class="loading">
+    < div class="loading" >
         <div class="loading-spinner"></div>
         <span class="loading-text">読み込み中...</span>
-      </div>
+      </div >
     `;
     }
 }
