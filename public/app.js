@@ -216,56 +216,78 @@ function confirmSelection() {
 function renderManagementView() {
     const container = document.getElementById('managementList');
 
+    // アクティブな部屋をソート（本館優先、その中で表示順）
+    // ※今回は既に sorted rooms なので filter するだけで順序は保たれるはず
     const activeRooms = rooms.filter(r => r.is_active);
-    const generalRooms = activeRooms.filter(r => r.category === 'general');
-    const specialRooms = activeRooms.filter(r => r.category === 'special');
-
-    let html = '';
-
-    if (generalRooms.length > 0) {
-        html += `
-      <section class="room-category">
-        <div class="category-header">
-          <span class="category-icon">🏠</span>
-          <h2 class="category-title">本館</h2>
-          <span class="category-count">${generalRooms.length}室</span>
-        </div>
-        <div class="room-cards">
-          ${generalRooms.map(room => createRoomCard(room)).join('')}
-        </div>
-      </section>
-    `;
-    }
-
-    if (specialRooms.length > 0) {
-        html += `
-      <section class="room-category">
-        <div class="category-header">
-          <span class="category-icon">🏡</span>
-          <h2 class="category-title">別館</h2>
-          <span class="category-count">${specialRooms.length}室</span>
-        </div>
-        <div class="room-cards">
-          ${specialRooms.map(room => createRoomCard(room)).join('')}
-        </div>
-      </section>
-    `;
-    }
 
     if (activeRooms.length === 0) {
-        html = `
-      <div class="loading">
-        <p class="loading-text">使用客室が選択されていません</p>
-        <button class="action-btn action-btn-primary" onclick="switchToSelection()">客室を選択する</button>
-      </div>
-    `;
+        container.innerHTML = `
+            <div class="loading">
+                <p class="loading-text">使用客室が選択されていません</p>
+                <button class="action-btn action-btn-primary" onclick="switchToSelection()">客室を選択する</button>
+            </div>
+        `;
+        return;
     }
 
-    container.innerHTML = html;
+    let html = `
+        <div class="room-list-header">
+            <div>参加者</div>
+            <div>アウト状況</div>
+            <div>コメント</div>
+        </div>
+        <div class="room-list-body">
+            ${activeRooms.map(room => createRoomRow(room)).join('')}
+        </div>
+    `;
 
-    // イベントリスナー
-    attachManagementEventListeners();
+    container.innerHTML = html;
     updateProgress();
+}
+
+function createRoomRow(room) {
+    const isOut = room.is_checkout === 1;
+    const note = room.notes || '';
+
+    // ステータスアイコンのHTML
+    const statusIcon = isOut
+        ? '<div class="status-out"></div>'
+        : '<div class="status-stay"></div>'; // 三角
+
+    return `
+    <div class="room-row" data-room-id="${room.room_id}">
+        <div class="col-room">${escapeHtml(room.room_id)}</div>
+        <div class="col-status" onclick="toggleOut('${room.room_id}')">
+            <div class="status-icon-wrapper">
+                ${statusIcon}
+            </div>
+        </div>
+        <div class="col-note" onclick="editNote('${room.room_id}')">
+            <span class="note-text">${note ? escapeHtml(note) : '<span style="color:#ccc;font-size:0.8rem">未入力</span>'}</span>
+        </div>
+    </div>
+    `;
+}
+
+// 備考編集機能
+function editNote(roomId) {
+    const room = rooms.find(r => r.room_id === roomId);
+    if (!room) return;
+
+    // シンプルにpromptを使用
+    const newNote = prompt('備考を入力してください', room.notes || '');
+    if (newNote !== null && newNote !== room.notes) {
+        // 楽観的更新
+        room.notes = newNote;
+
+        const row = document.querySelector(`.room-row[data-room-id="${roomId}"]`);
+        if (row) {
+            const noteEl = row.querySelector('.note-text');
+            noteEl.innerHTML = newNote ? escapeHtml(newNote) : '<span style="color:#ccc;font-size:0.8rem">未入力</span>';
+        }
+
+        updateRoom(roomId, { notes: newNote });
+    }
 }
 
 function createRoomCard(room) {
@@ -314,33 +336,25 @@ function toggleOut(roomId) {
     const room = rooms.find(r => r.room_id === roomId);
     if (room) {
         lastActionTime = Date.now(); // 操作時刻を記録
-        // 楽観的更新: APIを待たずにUIを変更
+        // 楽観的更新
         const newValue = room.is_checkout ? 0 : 1;
         room.is_checkout = newValue;
 
-        // ボタンのスタイルとアイコンを直接更新 (全体再描画より高速かつちらつきなし)
-        // ※ renderCurrentView()を呼んでも良いが、DOM操作で最適化
-        const card = document.querySelector(`.room-card[data-room-id="${roomId}"]`);
-        if (card) {
-            const btn = card.querySelector('.out-button');
-            const btnText = btn.querySelector('span:last-child');
-            const btnIcon = btn.querySelector('.btn-icon');
-
+        // DOM更新
+        const row = document.querySelector(`.room-row[data-room-id="${roomId}"]`);
+        if (row) {
+            const iconWrapper = row.querySelector('.status-icon-wrapper');
             if (newValue) {
-                card.classList.add('out-complete');
-                btn.classList.add('checked');
-                btnText.textContent = 'OUT済み';
-                btnIcon.textContent = '✅';
+                // OUTになった
+                iconWrapper.innerHTML = '<div class="status-out"></div>';
             } else {
-                card.classList.remove('out-complete');
-                btn.classList.remove('checked');
-                btnText.textContent = 'OUT';
-                btnIcon.textContent = '🚪';
+                // キャンセル
+                iconWrapper.innerHTML = '<div class="status-stay"></div>';
             }
-            updateProgress(); // プログレスバー更新
+            updateProgress();
         } else {
-            // カードが見つからない場合は安全策で全体再描画
-            renderCurrentView();
+            // 安全策
+            renderManagementView();
         }
 
         // バックグラウンドでサーバー更新
@@ -447,17 +461,3 @@ function showToast(message, type = 'info') {
     toast.className = 'toast show ' + type;
 
     setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
-}
-
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// グローバル関数として公開
-window.toggleMode = toggleMode;
-window.switchToSelection = switchToSelection;
