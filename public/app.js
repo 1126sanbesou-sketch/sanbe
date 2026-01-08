@@ -1,6 +1,7 @@
 // ===== グローバル変数 =====
 let rooms = [];
 let currentMode = 'selection'; // 'selection' or 'management'
+let lastActionTime = 0; // 最終操作時刻 (ポーリング競合防止用)
 
 // ===== 初期化 =====
 document.addEventListener('DOMContentLoaded', () => {
@@ -31,6 +32,11 @@ function startPolling() {
 }
 
 async function fetchRooms(silent = false) {
+    // 操作直後(2秒以内)のポーリングはスキップしてUI上書きを防ぐ
+    if (silent && Date.now() - lastActionTime < 2000) {
+        return;
+    }
+
     try {
         const response = await fetch('/api/rooms');
         if (!response.ok) throw new Error('データ取得失敗');
@@ -152,6 +158,7 @@ function createSelectionItem(room) {
 function toggleRoomSelection(roomId) {
     const room = rooms.find(r => r.room_id === roomId);
     if (room) {
+        lastActionTime = Date.now(); // 操作時刻を記録
         // 楽観的更新: APIを待たずにUIを変更
         const newValue = room.is_active ? 0 : 1;
         room.is_active = newValue;
@@ -299,6 +306,7 @@ function attachManagementEventListeners() {
 function toggleOut(roomId) {
     const room = rooms.find(r => r.room_id === roomId);
     if (room) {
+        lastActionTime = Date.now(); // 操作時刻を記録
         // 楽観的更新: APIを待たずにUIを変更
         const newValue = room.is_checkout ? 0 : 1;
         room.is_checkout = newValue;
