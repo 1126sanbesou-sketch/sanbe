@@ -55,6 +55,8 @@
 html {
   font-size: 16px;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  /* スマホでのタップ遅延（300ms）を解消 */
 }
 
 body {
@@ -299,8 +301,10 @@ body {
   border-radius: var(--radius-md);
   padding: var(--space-md);
   text-align: center;
+  text-align: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: transform 0.1s, background-color 0.1s, border-color 0.1s;
+  /* アニメーションを高速化 */
   user-select: none;
   -webkit-user-select: none;
 }
@@ -336,7 +340,8 @@ body {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  transition: all 0.3s ease;
+  overflow: hidden;
+  transition: transform 0.1s, background-color 0.1s, border-color 0.1s;
   border: 2px solid transparent;
 }
 
@@ -373,7 +378,9 @@ body {
   font-size: 1.25rem;
   font-weight: 700;
   font-family: inherit;
-  transition: all 0.2s;
+  font-family: inherit;
+  transition: transform 0.05s, background-color 0.1s;
+  /* ボタン反応をさらに高速化 */
   color: var(--color-text);
 }
 
