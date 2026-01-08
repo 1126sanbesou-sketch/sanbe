@@ -18,25 +18,33 @@ app.use(express.json());
 // 簡易認証ミドルウェア
 app.use((req, res, next) => {
     // 認証対象外のパス
-    const publicPaths = ['/login.html', '/styles.css', '/api/login'];
+    const publicPaths = ['/login.html', '/styles.css', '/api/login', '/manifest.json', '/robots.txt'];
     if (publicPaths.includes(req.path) || req.path.startsWith('/app/v1')) {
         return next();
     }
 
     // クッキーから認証トークンを確認
     const cookies = req.headers.cookie;
-    const isAuthenticated = cookies && cookies.includes('auth_token=valid_1126');
+    let role = 'guest';
 
-    if (isAuthenticated) {
+    if (cookies) {
+        if (cookies.includes('auth_token=valid_1126')) {
+            role = 'admin';
+        } else if (cookies.includes('auth_token=valid_0000')) {
+            role = 'viewer';
+        }
+    }
+
+    // 認証チェック
+    if (role !== 'guest') {
+        req.userRole = role; // リクエストに役割を付与
         return next();
     }
 
     // 認証失敗時の処理
     if (req.path.startsWith('/api/')) {
-        // APIの場合は401
         res.status(401).json({ error: '認証が必要です' });
     } else {
-        // それ以外はログイン画面へリダイレクト
         res.redirect('/login.html');
     }
 });
@@ -56,10 +64,15 @@ function broadcast(eventType, data) {
 // ログインAPI
 app.post('/api/login', (req, res) => {
     const { password } = req.body;
+
     if (password === '1126') {
-        // 簡易的な認証クッキーを設定 (30日間有効)
+        // 管理者
         res.setHeader('Set-Cookie', 'auth_token=valid_1126; Path=/; Max-Age=2592000; HttpOnly');
-        res.json({ success: true });
+        res.json({ success: true, role: 'admin' });
+    } else if (password === '0000') {
+        // 閲覧専用
+        res.setHeader('Set-Cookie', 'auth_token=valid_0000; Path=/; Max-Age=2592000; HttpOnly');
+        res.json({ success: true, role: 'viewer' });
     } else {
         res.status(401).json({ error: 'パスワードが違います' });
     }
@@ -112,6 +125,11 @@ app.get('/api/rooms/:roomId', async (req, res) => {
 
 // 部屋情報更新（PATCH - フィールド単位）
 app.patch('/api/rooms/:roomId', async (req, res) => {
+    // 権限チェック
+    if (req.userRole !== 'admin') {
+        return res.status(403).json({ error: '閲覧モードでは変更できません' });
+    }
+
     try {
         const roomId = req.params.roomId;
         const updates = req.body;
@@ -133,6 +151,11 @@ app.patch('/api/rooms/:roomId', async (req, res) => {
 
 // 全ステータスリセット（管理者用）
 app.post('/api/reset', async (req, res) => {
+    // 権限チェック
+    if (req.userRole !== 'admin') {
+        return res.status(403).json({ error: '権限がありません' });
+    }
+
     try {
         await db.resetAllRooms();
         // 最新状態を取得
