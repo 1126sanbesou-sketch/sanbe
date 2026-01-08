@@ -152,8 +152,14 @@ function createSelectionItem(room) {
 function toggleRoomSelection(roomId) {
     const room = rooms.find(r => r.room_id === roomId);
     if (room) {
-        room.is_active = room.is_active ? 0 : 1;
-        updateRoom(roomId, { is_active: room.is_active });
+        // 楽観的更新: APIを待たずにUIを変更
+        const newValue = room.is_active ? 0 : 1;
+        room.is_active = newValue;
+        renderSelectionView(); // 即座に再描画
+        updateSelectedCount();
+
+        // バックグラウンドでサーバー更新
+        updateRoom(roomId, { is_active: newValue });
     }
 }
 
@@ -293,7 +299,36 @@ function attachManagementEventListeners() {
 function toggleOut(roomId) {
     const room = rooms.find(r => r.room_id === roomId);
     if (room) {
+        // 楽観的更新: APIを待たずにUIを変更
         const newValue = room.is_checkout ? 0 : 1;
+        room.is_checkout = newValue;
+
+        // ボタンのスタイルとアイコンを直接更新 (全体再描画より高速かつちらつきなし)
+        // ※ renderCurrentView()を呼んでも良いが、DOM操作で最適化
+        const card = document.querySelector(`.room-card[data-room-id="${roomId}"]`);
+        if (card) {
+            const btn = card.querySelector('.out-button');
+            const btnText = btn.querySelector('span:last-child');
+            const btnIcon = btn.querySelector('.btn-icon');
+
+            if (newValue) {
+                card.classList.add('out-complete');
+                btn.classList.add('checked');
+                btnText.textContent = 'OUT済み';
+                btnIcon.textContent = '✅';
+            } else {
+                card.classList.remove('out-complete');
+                btn.classList.remove('checked');
+                btnText.textContent = 'OUT';
+                btnIcon.textContent = '🚪';
+            }
+            updateProgress(); // プログレスバー更新
+        } else {
+            // カードが見つからない場合は安全策で全体再描画
+            renderCurrentView();
+        }
+
+        // バックグラウンドでサーバー更新
         updateRoom(roomId, { is_checkout: newValue });
     }
 }
