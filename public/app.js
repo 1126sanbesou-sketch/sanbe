@@ -159,11 +159,18 @@ function toggleRoomSelection(roomId) {
     const room = rooms.find(r => r.room_id === roomId);
     if (room) {
         lastActionTime = Date.now(); // 操作時刻を記録
-        // 楽観的更新: APIを待たずにUIを変更
+        // 楽観的更新: DOM直接操作により最速でUI反映
         const newValue = room.is_active ? 0 : 1;
         room.is_active = newValue;
-        renderSelectionView(); // 即座に再描画
-        updateSelectedCount();
+
+        const item = document.querySelector(`.room-item[data-room-id="${roomId}"]`);
+        if (item) {
+            if (newValue) item.classList.add('selected');
+            else item.classList.remove('selected');
+            updateSelectedCount();
+        } else {
+            renderSelectionView(); // フォールバック
+        }
 
         // バックグラウンドでサーバー更新
         updateRoom(roomId, { is_active: newValue });
@@ -454,10 +461,3 @@ function escapeHtml(text) {
 // グローバル関数として公開
 window.toggleMode = toggleMode;
 window.switchToSelection = switchToSelection;
-window.selectAll = selectAll;
-window.selectNone = selectNone;
-window.confirmSelection = confirmSelection;
-window.toggleOut = toggleOut;
-window.confirmReset = confirmReset;
-window.closeModal = closeModal;
-window.executeReset = executeReset;
