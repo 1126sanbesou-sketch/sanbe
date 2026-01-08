@@ -44,6 +44,8 @@ async function initApp() {
         showToast('閲覧専用モードでログイン中', 'info');
         document.body.classList.add('viewer-mode');
     }
+
+    startPolling();
 }
 
 // モード判定
@@ -486,5 +488,3 @@ window.confirmSelection = confirmSelection;
 window.toggleOut = toggleOut;
 window.editNote = editNote;
 window.confirmReset = confirmReset;
-window.closeModal = closeModal;
-window.executeReset = executeReset;
