@@ -1,3 +1,15 @@
+window.toggleMode = function () { toggleMode(); };
+window.switchToSelection = function () { switchToSelection(); };
+window.selectAll = function () { selectAll(); };
+window.selectNone = function () { selectNone(); };
+window.confirmSelection = function () { confirmSelection(); };
+window.toggleOut = function (roomId) { toggleOut(roomId); };
+window.editNote = function (roomId) { editNote(roomId); };
+window.confirmReset = function () { confirmReset(); };
+window.closeModal = function () { closeModal(); };
+window.executeReset = function () { executeReset(); };
+
+// ===== グローバル変数 =====
 let rooms = [];
 let currentMode = 'selection'; // 'selection' or 'management'
 let lastActionTime = 0; // 最終操作時刻 (ポーリング競合防止用)
@@ -419,16 +431,4 @@ function confirmReset() {
 function closeModal() {
     document.getElementById('modalOverlay').classList.remove('active');
 }
-
-async function executeReset() {
-    if (!checkAuth()) return;
-
-    closeModal();
-
-    try {
-        const response = await fetch('/api/reset', {
-            method: 'POST'
-        });
-
-        if (!response.ok) throw new Error('リセット失敗');
 
