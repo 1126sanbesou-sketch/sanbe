@@ -10,6 +10,19 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// 権限チェック
+function isViewer() {
+    return localStorage.getItem('auth_role') === 'viewer';
+}
+
+function checkAuth() {
+    if (isViewer()) {
+        showToast('閲覧専用モードのため操作できません', 'error');
+        return false;
+    }
+    return true;
+}
+
 // ===== 初期化 =====
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
@@ -23,8 +36,13 @@ async function initApp() {
         console.error('fetchRooms failed', e);
         showToast('通信エラーが発生しました', 'error');
     }
-    startPolling();
     determineInitialMode();
+
+    // 閲覧モード通知
+    if (isViewer()) {
+        showToast('閲覧専用モードでログイン中', 'info');
+        document.body.classList.add('viewer-mode');
+    }
 }
 
 // モード判定
@@ -168,6 +186,8 @@ function createSelectionItem(room) {
 }
 
 function toggleRoomSelection(roomId) {
+    if (!checkAuth()) return;
+
     const room = rooms.find(r => r.room_id === roomId);
     if (room) {
         lastActionTime = Date.now(); // 操作時刻を記録
@@ -243,7 +263,7 @@ function renderManagementView() {
 
     let html = `
         <div class="room-list-header">
-            <div>参加者</div>
+            <div>部屋番号</div>
             <div>アウト状況</div>
             <div>コメント</div>
         </div>
@@ -265,6 +285,17 @@ function createRoomRow(room) {
         ? '<div class="status-out"></div>'
         : '<div class="status-stay"></div>'; // 三角
 
+    // 時刻フォーマット (例: 14:30)
+    let timeStr = '';
+    if (room.updated_at) {
+        try {
+            const date = new Date(room.updated_at);
+            timeStr = date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+        } catch (e) {
+            console.error('Date parse error', e);
+        }
+    }
+
     return `
     <div class="room-row" data-room-id="${room.room_id}">
         <div class="col-room">${escapeHtml(room.room_id)}</div>
@@ -272,6 +303,7 @@ function createRoomRow(room) {
             <div class="status-icon-wrapper">
                 ${statusIcon}
             </div>
+            <div class="last-update">${timeStr}</div>
         </div>
         <div class="col-note" onclick="editNote('${room.room_id}')">
             <span class="note-text">${note ? escapeHtml(note) : '<span style="color:#ccc;font-size:0.8rem">未入力</span>'}</span>
@@ -282,6 +314,8 @@ function createRoomRow(room) {
 
 // 備考編集機能
 function editNote(roomId) {
+    if (!checkAuth()) return;
+
     const room = rooms.find(r => r.room_id === roomId);
     if (!room) return;
 
@@ -302,6 +336,8 @@ function editNote(roomId) {
 }
 
 function toggleOut(roomId) {
+    if (!checkAuth()) return;
+
     const room = rooms.find(r => r.room_id === roomId);
     if (room) {
         lastActionTime = Date.now(); // 操作時刻を記録
@@ -383,6 +419,8 @@ function closeModal() {
 }
 
 async function executeReset() {
+    if (!checkAuth()) return;
+
     closeModal();
 
     try {
@@ -394,41 +432,3 @@ async function executeReset() {
 
         showToast('全ステータスをリセットしました', 'success');
     } catch (error) {
-        console.error('Error resetting:', error);
-        showToast('リセットに失敗しました', 'error');
-    }
-}
-
-// ===== ユーティリティ =====
-function showLoading() {
-    const selectionList = document.getElementById('selectionList');
-    if (selectionList) {
-        selectionList.innerHTML = `
-      <div class="loading">
-        <div class="loading-spinner"></div>
-        <span class="loading-text">読み込み中...</span>
-      </div>
-    `;
-    }
-}
-
-function showToast(message, type = 'info') {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.className = 'toast show ' + type;
-
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
-}
-
-// グローバル関数として公開
-window.toggleMode = toggleMode;
-window.switchToSelection = switchToSelection;
-window.selectAll = selectAll;
-window.selectNone = selectNone;
-window.confirmSelection = confirmSelection;
-window.toggleOut = toggleOut;
-window.confirmReset = confirmReset;
-window.closeModal = closeModal;
-window.executeReset = executeReset;
