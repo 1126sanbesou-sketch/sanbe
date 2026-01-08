@@ -3,14 +3,29 @@ let rooms = [];
 let currentMode = 'selection'; // 'selection' or 'management'
 let lastActionTime = 0; // 最終操作時刻 (ポーリング競合防止用)
 
+// デバッグ用: エラーを画面に表示
+window.addEventListener('error', function (e) {
+    const msg = e.message + ' at line ' + e.lineno;
+    const div = document.createElement('div');
+    div.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;padding:20px;z-index:9999;font-weight:bold;';
+    div.textContent = msg;
+    document.body.appendChild(div);
+});
+
 // ===== 初期化 =====
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
 
 async function initApp() {
+    console.log('initApp started');
     showLoading();
-    await fetchRooms();
+    try {
+        await fetchRooms();
+        console.log('fetchRooms done');
+    } catch (e) {
+        console.error('fetchRooms failed in initApp', e);
+    }
     startPolling();
     determineInitialMode();
 }
