@@ -1,15 +1,3 @@
-// ===== グローバル関数を先に登録（HTMLのonclickで使用） =====
-window.toggleMode = function () { toggleMode(); };
-window.switchToSelection = function () { switchToSelection(); };
-window.selectAll = function () { selectAll(); };
-window.selectNone = function () { selectNone(); };
-window.confirmSelection = function () { confirmSelection(); };
-window.toggleOut = function (roomId) { toggleOut(roomId); };
-window.editNote = function (roomId) { editNote(roomId); };
-window.confirmReset = function () { confirmReset(); };
-window.closeModal = function () { closeModal(); };
-window.executeReset = function () { executeReset(); };
-
 // ===== グローバル変数 =====
 let rooms = [];
 let currentMode = 'selection'; // 'selection' or 'management'
@@ -488,3 +476,15 @@ function showToast(message, type = 'info') {
         toast.classList.remove('show');
     }, 3000);
 }
+
+// ===== グローバル関数として公開 =====
+window.toggleMode = toggleMode;
+window.switchToSelection = switchToSelection;
+window.selectAll = selectAll;
+window.selectNone = selectNone;
+window.confirmSelection = confirmSelection;
+window.toggleOut = toggleOut;
+window.editNote = editNote;
+window.confirmReset = confirmReset;
+window.closeModal = closeModal;
+window.executeReset = executeReset;
