@@ -215,6 +215,7 @@ function updateSelectedCount() {
 }
 
 function selectAll() {
+    if (!checkAuth()) return;
     rooms.forEach(room => {
         if (!room.is_active) {
             room.is_active = 1;
@@ -225,6 +226,7 @@ function selectAll() {
 }
 
 function selectNone() {
+    if (!checkAuth()) return;
     rooms.forEach(room => {
         if (room.is_active) {
             room.is_active = 0;
@@ -430,5 +432,3 @@ async function executeReset() {
 
         if (!response.ok) throw new Error('リセット失敗');
 
-        showToast('全ステータスをリセットしました', 'success');
-    } catch (error) {
