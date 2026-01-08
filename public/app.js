@@ -1,3 +1,4 @@
+// ===== グローバル関数を先に登録（HTMLのonclickで使用） =====
 window.toggleMode = function () { toggleMode(); };
 window.switchToSelection = function () { switchToSelection(); };
 window.selectAll = function () { selectAll(); };
@@ -80,10 +81,24 @@ async function fetchRooms(silent = false) {
     }
 
     try {
-        const response = await fetch('/api/rooms');
+        console.log('Fetching rooms...');
+        const response = await fetch('/api/rooms', {
+            credentials: 'include'
+        });
+
+        console.log('Response status:', response.status);
+
+        if (response.status === 401) {
+            // 認証エラーの場合はログインページへ
+            console.log('Not authenticated, redirecting to login');
+            window.location.href = '/login.html';
+            return;
+        }
+
         if (!response.ok) throw new Error('データ取得失敗: ' + response.status);
 
         const newRooms = await response.json();
+        console.log('Rooms received:', newRooms.length);
 
         // データに変更がある場合のみ更新 (簡易的な等価性チェック)
         if (JSON.stringify(newRooms) !== JSON.stringify(rooms)) {
@@ -432,3 +447,44 @@ function closeModal() {
     document.getElementById('modalOverlay').classList.remove('active');
 }
 
+async function executeReset() {
+    if (!checkAuth()) return;
+
+    closeModal();
+
+    try {
+        const response = await fetch('/api/reset', {
+            method: 'POST'
+        });
+
+        if (!response.ok) throw new Error('リセット失敗');
+
+        showToast('全ステータスをリセットしました', 'success');
+    } catch (error) {
+        console.error('Error resetting:', error);
+        showToast('リセットに失敗しました', 'error');
+    }
+}
+
+// ===== ユーティリティ =====
+function showLoading() {
+    const selectionList = document.getElementById('selectionList');
+    if (selectionList) {
+        selectionList.innerHTML = `
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        <span class="loading-text">読み込み中...</span>
+      </div>
+    `;
+    }
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = 'toast show ' + type;
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
