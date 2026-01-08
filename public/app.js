@@ -1,4 +1,3 @@
-// ===== グローバル変数 =====
 let rooms = [];
 let currentMode = 'selection'; // 'selection' or 'management'
 let lastActionTime = 0; // 最終操作時刻 (ポーリング競合防止用)
@@ -51,13 +50,7 @@ async function fetchRooms(silent = false) {
     }
 
     try {
-        // 5秒でタイムアウトさせる
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-        const response = await fetch('/api/rooms', { signal: controller.signal });
-        clearTimeout(timeoutId);
-
+        const response = await fetch('/api/rooms');
         if (!response.ok) throw new Error('データ取得失敗: ' + response.status);
 
         const newRooms = await response.json();
@@ -136,7 +129,7 @@ function renderSelectionView() {
     const specialRooms = rooms.filter(r => r.category === 'special');
 
     container.innerHTML = `
-    < section class="room-category" >
+    <section class="room-category">
       <div class="category-header">
         <span class="category-icon">🏠</span>
         <h2 class="category-title">本館</h2>
@@ -144,18 +137,18 @@ function renderSelectionView() {
       <div class="room-grid">
         ${generalRooms.map(room => createSelectionItem(room)).join('')}
       </div>
-    </section >
-
-    <section class="room-category">
-        <div class="category-header">
-            <span class="category-icon">🏡</span>
-            <h2 class="category-title">別館</h2>
-        </div>
-        <div class="room-grid">
-            ${specialRooms.map(room => createSelectionItem(room)).join('')}
-        </div>
     </section>
-`;
+    
+    <section class="room-category">
+      <div class="category-header">
+        <span class="category-icon">🏡</span>
+        <h2 class="category-title">別館</h2>
+      </div>
+      <div class="room-grid">
+        ${specialRooms.map(room => createSelectionItem(room)).join('')}
+      </div>
+    </section>
+  `;
 
     // イベントリスナー
     container.querySelectorAll('.room-item').forEach(item => {
@@ -168,10 +161,10 @@ function renderSelectionView() {
 function createSelectionItem(room) {
     const selectedClass = room.is_active ? 'selected' : '';
     return `
-    < div class="room-item ${selectedClass}" data - room - id="${room.room_id}" >
-        <span class="room-name">${escapeHtml(room.room_id)}</span>
-    </div >
-    `;
+    <div class="room-item ${selectedClass}" data-room-id="${room.room_id}">
+      <span class="room-name">${escapeHtml(room.room_id)}</span>
+    </div>
+  `;
 }
 
 function toggleRoomSelection(roomId) {
@@ -182,7 +175,7 @@ function toggleRoomSelection(roomId) {
         const newValue = room.is_active ? 0 : 1;
         room.is_active = newValue;
 
-        const item = document.querySelector(`.room - item[data - room - id="${roomId}"]`);
+        const item = document.querySelector(`.room-item[data-room-id="${roomId}"]`);
         if (item) {
             if (newValue) item.classList.add('selected');
             else item.classList.remove('selected');
@@ -228,7 +221,7 @@ function confirmSelection() {
         return;
     }
     switchToManagement();
-    showToast(`${ activeCount } 室を選択しました`, 'success');
+    showToast(`${activeCount}室を選択しました`, 'success');
 }
 
 // ===== 管理画面描画 =====
@@ -236,29 +229,28 @@ function renderManagementView() {
     const container = document.getElementById('managementList');
 
     // アクティブな部屋をソート（本館優先、その中で表示順）
-    // ※今回は既に sorted rooms なので filter するだけで順序は保たれるはず
     const activeRooms = rooms.filter(r => r.is_active);
 
     if (activeRooms.length === 0) {
         container.innerHTML = `
-    < div class="loading" >
+            <div class="loading">
                 <p class="loading-text">使用客室が選択されていません</p>
                 <button class="action-btn action-btn-primary" onclick="switchToSelection()">客室を選択する</button>
-            </div >
-    `;
+            </div>
+        `;
         return;
     }
 
     let html = `
-    < div class="room-list-header" >
+        <div class="room-list-header">
             <div>参加者</div>
             <div>アウト状況</div>
             <div>コメント</div>
-        </div >
-    <div class="room-list-body">
-        ${activeRooms.map(room => createRoomRow(room)).join('')}
-    </div>
-`;
+        </div>
+        <div class="room-list-body">
+            ${activeRooms.map(room => createRoomRow(room)).join('')}
+        </div>
+    `;
 
     container.innerHTML = html;
     updateProgress();
@@ -274,7 +266,7 @@ function createRoomRow(room) {
         : '<div class="status-stay"></div>'; // 三角
 
     return `
-    < div class="room-row" data - room - id="${room.room_id}" >
+    <div class="room-row" data-room-id="${room.room_id}">
         <div class="col-room">${escapeHtml(room.room_id)}</div>
         <div class="col-status" onclick="toggleOut('${room.room_id}')">
             <div class="status-icon-wrapper">
@@ -284,7 +276,7 @@ function createRoomRow(room) {
         <div class="col-note" onclick="editNote('${room.room_id}')">
             <span class="note-text">${note ? escapeHtml(note) : '<span style="color:#ccc;font-size:0.8rem">未入力</span>'}</span>
         </div>
-    </div >
+    </div>
     `;
 }
 
@@ -299,7 +291,7 @@ function editNote(roomId) {
         // 楽観的更新
         room.notes = newNote;
 
-        const row = document.querySelector(`.room - row[data - room - id="${roomId}"]`);
+        const row = document.querySelector(`.room-row[data-room-id="${roomId}"]`);
         if (row) {
             const noteEl = row.querySelector('.note-text');
             noteEl.innerHTML = newNote ? escapeHtml(newNote) : '<span style="color:#ccc;font-size:0.8rem">未入力</span>';
@@ -307,48 +299,6 @@ function editNote(roomId) {
 
         updateRoom(roomId, { notes: newNote });
     }
-}
-
-function createRoomCard(room) {
-    const outClass = room.is_checkout ? 'out-complete' : '';
-    const btnClass = room.is_checkout ? 'checked' : '';
-    const hasNotes = room.notes && room.notes.trim() !== '';
-
-    return `
-    < div class="room-card ${outClass}" data - room - id="${room.room_id}" >
-      <div class="room-card-content">
-        <span class="room-name">${escapeHtml(room.room_id)}</span>
-        <button class="out-button ${btnClass}" 
-                data-room-id="${room.room_id}"
-                onclick="toggleOut('${room.room_id}')">
-          <span class="btn-icon">${room.is_checkout ? '✅' : '🚪'}</span>
-          <span>${room.is_checkout ? 'OUT済み' : 'OUT'}</span>
-        </button>
-      </div>
-      <div class="notes-section">
-        <div class="notes-wrapper">
-          <span class="notes-icon ${hasNotes ? 'has-notes' : ''}">📝</span>
-          <input type="text" 
-                 class="notes-input" 
-                 placeholder="備考を入力..."
-                 value="${escapeHtml(room.notes || '')}"
-                 data-room-id="${room.room_id}">
-        </div>
-      </div>
-    </div >
-    `;
-}
-
-function attachManagementEventListeners() {
-    // 備考入力
-    document.querySelectorAll('.management-mode .notes-input').forEach(input => {
-        let debounceTimer;
-        input.addEventListener('input', (e) => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => handleNotesChange(e), 500);
-        });
-        input.addEventListener('blur', handleNotesChange);
-    });
 }
 
 function toggleOut(roomId) {
@@ -360,7 +310,7 @@ function toggleOut(roomId) {
         room.is_checkout = newValue;
 
         // DOM更新
-        const row = document.querySelector(`.room - row[data - room - id="${roomId}"]`);
+        const row = document.querySelector(`.room-row[data-room-id="${roomId}"]`);
         if (row) {
             const iconWrapper = row.querySelector('.status-icon-wrapper');
             if (newValue) {
@@ -390,25 +340,13 @@ function updateProgress() {
     document.getElementById('totalActiveCount').textContent = total;
 
     const percentage = total > 0 ? (outCount / total) * 100 : 0;
-    document.getElementById('progressFill').style.width = `${ percentage }% `;
-}
-
-// ===== イベントハンドラー =====
-async function handleNotesChange(event) {
-    const input = event.target;
-    const roomId = input.dataset.roomId;
-    const value = input.value;
-
-    const room = rooms.find(r => r.room_id === roomId);
-    if (room && room.notes !== value) {
-        await updateRoom(roomId, { notes: value });
-    }
+    document.getElementById('progressFill').style.width = `${percentage}%`;
 }
 
 // ===== API呼び出し =====
 async function updateRoom(roomId, updates) {
     try {
-        const response = await fetch(`/ api / rooms / ${ encodeURIComponent(roomId) } `, {
+        const response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
@@ -466,10 +404,31 @@ function showLoading() {
     const selectionList = document.getElementById('selectionList');
     if (selectionList) {
         selectionList.innerHTML = `
-    < div class="loading" >
+      <div class="loading">
         <div class="loading-spinner"></div>
         <span class="loading-text">読み込み中...</span>
-      </div >
+      </div>
     `;
     }
 }
+
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = 'toast show ' + type;
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+// グローバル関数として公開
+window.toggleMode = toggleMode;
+window.switchToSelection = switchToSelection;
+window.selectAll = selectAll;
+window.selectNone = selectNone;
+window.confirmSelection = confirmSelection;
+window.toggleOut = toggleOut;
+window.confirmReset = confirmReset;
+window.closeModal = closeModal;
+window.executeReset = executeReset;
